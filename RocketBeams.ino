@@ -2,7 +2,8 @@
 
 //const int ledCount = 185;
 const int ledCount =150;
-const int NUM_STRIPS = 8;
+const int NUM_STRIPS = 3;
+const int tailLights = 2;
 CRGB leds[NUM_STRIPS][ledCount];
 
 int BOTTOM_INDEX = 0;
@@ -159,25 +160,16 @@ void rotatingRainbow()
 
 void testStrips()
 {
-    fill_solid(leds[5], ledCount, CRGB::Red);
-    fill_solid(leds[7], ledCount, CRGB::Green);
-
-
-    fill_solid(leds[2], ledCount, CRGB::Blue);
-    fill_solid(leds[4], ledCount, CRGB::Purple);
-
-    fill_solid(leds[0], ledCount, CRGB::Orange);
-    fill_solid(leds[6], ledCount, CRGB::White);
-
-    fill_solid(leds[1], ledCount, CRGB::Red);
-    fill_solid(leds[3], ledCount, CRGB::Blue);
+    fill_solid(leds[0], ledCount, CRGB::Purple);
+    fill_solid(leds[tailLights], ledCount, CRGB::Red);
+    fill_solid(leds[2], ledCount, CRGB::Purple);
 
 }
 
 void rotatingColors()
 {
     static byte color = 0;
-    for(int i = 0;i<8;i++)
+    for(int i = 0;i<3;i++)
     {
         fill_solid(leds[i], ledCount, (CRGB::HTMLColorCode)color++);
     }
@@ -187,34 +179,95 @@ void setup()
 {
   // For safety (to prevent too high of a power draw), the test case defaults to
   // setting brightness to 25% brightness
-  LEDS.setBrightness(255);
+  LEDS.setBrightness(55);
   
-  LEDS.addLeds<WS2811,2, GRB>(leds[0], ledCount);
-  LEDS.addLeds<WS2811,14, GRB>(leds[1], ledCount);
+  LEDS.addLeds<WS2811,4, GRB>(leds[0], ledCount);
+  LEDS.addLeds<WS2811,7, RGB>(leds[tailLights], ledCount);
+  LEDS.addLeds<WS2811,10, GRB>(leds[2], ledCount);
+  /*
   LEDS.addLeds<WS2811,7, GRB>(leds[2], ledCount);
   LEDS.addLeds<WS2811,8, GRB>(leds[3], ledCount);
   LEDS.addLeds<WS2811,6, GRB>(leds[4], ledCount);
   LEDS.addLeds<WS2811,20, GRB>(leds[5], ledCount);
   LEDS.addLeds<WS2811,21, GRB>(leds[6], ledCount);
-  LEDS.addLeds<WS2811,5, GRB>(leds[7], ledCount);
-      
+  */
+
+  Serial.begin(9600);
+
   fillSolid(0,0,0); //-BLANK STRIP  
   LEDS.show();
 }
 
+void pulseJets()
+{
+  static bool increment = true;
+  static byte hue = 0;
+  static byte redShift = 0;
+
+  for (int i = 0;i<50;i++)
+  {
+    leds[tailLights][i].setHue(random(0,40));
+    leds[tailLights][99-i].setHue(random(0,40));
+
+    leds[tailLights][i] += CRGB(redShift,0,0);
+    leds[tailLights][99-i]+= CRGB(redShift,0,0);
+  }
+    redShift+=5;
+    delay(10);
+  LEDS.show();
+}
+
+void smile()
+{
+  fill_solid(leds[tailLights], ledCount, CRGB::Black);
+  //for (int i = 0; i<32;i++)
+  //  leds[tailLights][i] = CRGB::Red;
+
+  for (int i = 36; i<43;i++)
+    leds[tailLights][i] = CRGB::Red;
+
+  leds[tailLights][44] = CRGB::Blue;
+  leds[tailLights][34] = CRGB::Blue;
+
+  leds[tailLights][49] = CRGB::Purple;
+}
+
+void bigSmile()
+{
+  fill_solid(leds[tailLights], ledCount, CRGB::Black);
+
+  for (int i = 8; i<23;i++)
+    leds[tailLights][i] = CRGB::Red;
+
+  leds[tailLights][3] = CRGB::Blue;
+  leds[tailLights][27] = CRGB::Blue;
+
+  leds[tailLights][49] = CRGB::HotPink;
+
+  LEDS.show();
+}
+
+
 void loop()
 {
-
   //rotatingRainbow();
-  //testStrips();
+  if(random(0,5000) == 0)
+  {
+      smile();
+      LEDS.show();
+      delay(1000);
+  }
+  else
+  {
+    pulseJets();
+  }//wink();
+  //rotatingColors();
   //nonReactiveFade();
-  fillSolid(CRGB::Blue);
+  //fillSolid(CRGB::Blue);
   //nonReactiveFade();
   //fillSolid(CRGB::HotPink);
   LEDS.show();
   //fillSolid(CRGB::Pink);
-  delay(1);
-  LEDS.show();
     // delay(delayTime);
 }
 
