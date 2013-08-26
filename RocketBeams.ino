@@ -1,9 +1,13 @@
 #include <FastSPI_LED2.h>
 
 //const int ledCount = 185;
-const int ledCount =150;
+const int ledCount =126;
+const int ledsCountRow = 21;
 const int NUM_STRIPS = 3;
-const int tailLights = 2;
+const int cushionLeft = 0;
+const int tailLights = 1;
+const int cushionRight = 2;
+
 CRGB leds[NUM_STRIPS][ledCount];
 
 int BOTTOM_INDEX = 0;
@@ -160,9 +164,9 @@ void rotatingRainbow()
 
 void testStrips()
 {
-    fill_solid(leds[0], ledCount, CRGB::Purple);
+    fill_solid(leds[cushionLeft], ledCount, CRGB::Purple);
     fill_solid(leds[tailLights], ledCount, CRGB::Red);
-    fill_solid(leds[2], ledCount, CRGB::Purple);
+    fill_solid(leds[cushionRight], ledCount, CRGB::Purple);
 
 }
 
@@ -179,7 +183,7 @@ void setup()
 {
   // For safety (to prevent too high of a power draw), the test case defaults to
   // setting brightness to 25% brightness
-  LEDS.setBrightness(55);
+  LEDS.setBrightness(64);
   
   LEDS.addLeds<WS2811,4, GRB>(leds[0], ledCount);
   LEDS.addLeds<WS2811,7, RGB>(leds[tailLights], ledCount);
@@ -192,10 +196,21 @@ void setup()
   LEDS.addLeds<WS2811,21, GRB>(leds[6], ledCount);
   */
 
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   fillSolid(0,0,0); //-BLANK STRIP  
   LEDS.show();
+}
+
+byte getFlameColor()
+{
+  byte seed = random(0,50);
+  if (seed <30)
+    return seed;
+  else if (seed < 45)
+    return seed - 30;
+  else 
+    return 160 + seed;
 }
 
 void pulseJets()
@@ -206,15 +221,13 @@ void pulseJets()
 
   for (int i = 0;i<50;i++)
   {
-    leds[tailLights][i].setHue(random(0,40));
-    leds[tailLights][99-i].setHue(random(0,40));
+    leds[tailLights][i].setHue(getFlameColor());
+    leds[tailLights][99-i].setHue(getFlameColor());
 
-    leds[tailLights][i] += CRGB(redShift,0,0);
-    leds[tailLights][99-i]+= CRGB(redShift,0,0);
+    //leds[tailLights][i] += CRGB(redShift,0,0);
+    //leds[tailLights][99-i]+= CRGB(redShift,0,0);
   }
-    redShift+=5;
-    delay(10);
-  LEDS.show();
+    redShift+=1;
 }
 
 void smile()
@@ -247,6 +260,30 @@ void bigSmile()
   LEDS.show();
 }
 
+void cushions()
+{
+  static byte phase = 0;
+
+  for (int column = 0;column<6;column++)
+  {
+    phase += 3;
+    for (int row = 0;row < ledsCountRow; row++)
+    {
+      if (phase % 3)
+      {
+        leds[cushionLeft][ledsCountRow*column + row] = CRGB::Blue;
+        leds[cushionLeft][ledsCountRow*column + row] += CRGB(row*20,0,0);
+      }
+      else
+      {
+        leds[cushionLeft][ledsCountRow*column + row] = CRGB::Red;
+        leds[cushionLeft][ledsCountRow*column + row] += CRGB(0,0,row*20);
+      }
+    }
+  }
+//  fill_solid(leds[cushionRight], 126, row % 2 ? CRGB::Blue : CRGB::Red);
+}
+
 
 void loop()
 {
@@ -260,7 +297,10 @@ void loop()
   else
   {
     pulseJets();
-  }//wink();
+  }
+  cushions();
+  delay(10);
+  //wink();
   //rotatingColors();
   //nonReactiveFade();
   //fillSolid(CRGB::Blue);
